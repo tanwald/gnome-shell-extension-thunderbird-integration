@@ -1,0 +1,3 @@
+content   gnome-shell-integration                 chrome/content/
+locale    gnome-shell-integration   en-US         chrome/locale/en-US/
+overlay chrome://messenger/content/messenger.xul chrome://gnome-shell-integration/content/gnome-shell-integration.xul

@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<overlay id="gnome-shell-integration-overlay" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+	<script src="gnome-shell-integration.js"/>
+</overlay>
