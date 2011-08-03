@@ -16,7 +16,7 @@ class ThunderbirdDBus(dbus.service.Object):
         super(ThunderbirdDBus, self).__init__(busname, self._OBJECT_PATH)
 
     @dbus.service.signal(dbus_interface=_BUSNAME, signature='ss')
-    def NewMailSignal(self, author, subject):
+    def NewMessageSignal(self, author, subject):
         pass
 
 if __name__ == '__main__':
@@ -24,4 +24,4 @@ if __name__ == '__main__':
     subject = sys.argv[2] if (len(sys.argv) > 2) else ''
     
     tb_dbus = ThunderbirdDBus()
-    tb_dbus.NewMailSignal(author, subject)
+    tb_dbus.NewMessageSignal(author, subject)

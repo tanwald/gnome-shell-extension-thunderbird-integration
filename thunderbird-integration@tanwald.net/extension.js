@@ -1,6 +1,7 @@
 /* -*- mode: js2; js2-basic-offset: 4; indent-tabs-mode: nil -*- */
 
 const DBus = imports.dbus;
+const Gettext = imports.gettext;
 const Lang = imports.lang;
 const Shell = imports.gi.Shell;
 
@@ -12,7 +13,7 @@ const ThunderbirdIface = {
     name: 'org.mozilla.thunderbird.DBus',
     path: '/org/mozilla/thunderbird/DBus',
     methods: [],
-    signals: [{ name: 'NewMailSignal',
+    signals: [{ name: 'NewMessageSignal',
                 inSignature: 'ss' }]
 };
 
@@ -30,11 +31,11 @@ ThunderbirdProxy.prototype = {
         DBus.session.proxifyObject(this, 
                                    ThunderbirdIface.name, 
                                    ThunderbirdIface.path);
-        this.connect('NewMailSignal',
-                     Lang.bind(this, this._onNewMail));
+        this.connect('NewMessageSignal',
+                     Lang.bind(this, this._onNewMsg));
     },
 
-    _onNewMail: function(object, author, subject) {
+    _onNewMsg: function(object, author, subject) {
         if (this._source == null) {
             this._source = new ThunderbirdNotificationSource();
             this._source.connect('destroy', 
@@ -44,7 +45,7 @@ ThunderbirdProxy.prototype = {
                                            }));
             Main.messageTray.add(this._source);
         }
-        this._source.onNewMail(author, subject);
+        this._source.onNewMsg(author, subject);
     }
 }
 DBus.proxifyPrototype(ThunderbirdProxy.prototype, ThunderbirdIface);
@@ -67,9 +68,11 @@ ThunderbirdNotificationSource.prototype = {
         this._setSummaryIcon(this.createNotificationIcon());
     },
     
-    onNewMail: function(author, subject) {
-        let title = (this.notifications.length + 1) + '. New Mail';
-        let message = 'From: ' + author + '\nSubject: ' + subject;
+    onNewMsg: function(author, subject) {
+        let title = (this.notifications.length + 1) + '. ' 
+                    + Gettext.gettext('New Message');
+        let message = Gettext.gettext('From') + ': ' + author + '\n' 
+                      + Gettext.gettext('Subject') + ': ' + subject;
         this.notify(new MessageTray.Notification(this, title, message));
     },
     
@@ -106,6 +109,12 @@ ThunderbirdNotificationSource.prototype = {
 // Main ///////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
-function main() {
+function main(extensionMeta) {
+    
+    Gettext.bindtextdomain('thunderbird-integration', 
+            extensionMeta.path + '/locale');
+    Gettext.textdomain('thunderbird-integration');
+
     let thunderbirdProxy = new ThunderbirdProxy();
+    
 }

@@ -11,16 +11,16 @@ function prompt(message) {
     promptService.alert(null, "Gnome-Shell-Integration Alert", message);
 }
 
-var NewMailListener = {    
+var NewMsgListener = {    
     
-    _NEW_MAIL_FLAG: 0x00010000,
+    _NEW_MSG_FLAG: 0x00010000,
     
     /**
      * Function that is triggered when a new message arrives.
      * @param header: Header of the new message.
      */
     msgAdded: function(header) { 
-        if (header.flags & this._NEW_MAIL_FLAG) {
+        if (header.flags & this._NEW_MSG_FLAG) {
             [author, subject] = this.prepareMsg(header);
             this.sendDBusMsg(author, subject);
         }
@@ -89,17 +89,17 @@ var GnomeShellIntegration = {
      */
     onLoad: function() {
         this.initialized = true;
-        this.addNewMailListener();
+        this.addNewMsgListener();
     },
     
     /**
-     * Adds the NewMailListener.
+     * Adds the NewMsgListener.
      */
-    addNewMailListener: function() {
+    addNewMsgListener: function() {
         var notificationService = Components
             .classes["@mozilla.org/messenger/msgnotificationservice;1"]
             .getService(Components.interfaces.nsIMsgFolderNotificationService);
-        notificationService.addListener(NewMailListener, 
+        notificationService.addListener(NewMsgListener, 
                                         notificationService.msgAdded);
     }
 };
