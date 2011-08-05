@@ -14,13 +14,22 @@ class ThunderbirdDBus(dbus.service.Object):
         busname = dbus.service.BusName(self._BUSNAME, bus=bus)
         super(ThunderbirdDBus, self).__init__(busname, self._OBJECT_PATH)
 
-    @dbus.service.signal(dbus_interface=_BUSNAME, signature='ss')
-    def NewMessageSignal(self, author, subject):
+    @dbus.service.signal(dbus_interface=_BUSNAME, signature='sss')
+    def NewMessageSignal(self, id, author, subject):
         pass
-
+    
+    @dbus.service.signal(dbus_interface=_BUSNAME, signature='ss')
+    def ChangedMessageSignal(self, id, event):
+        pass
+    
 if __name__ == '__main__':
-    author = sys.argv[1]
-    subject = sys.argv[2] if (len(sys.argv) > 2) else ''
+    event = sys.argv[1]
+    id = sys.argv[2]
+    author = sys.argv[3] if (len(sys.argv) > 3) else ''
+    subject = sys.argv[4] if (len(sys.argv) > 4) else ''
     
     tb_dbus = ThunderbirdDBus()
-    tb_dbus.NewMessageSignal(author, subject)
+    if event == 'new':
+        tb_dbus.NewMessageSignal(id, author, subject)
+    elif event == 'read' or 'removed':
+        tb_dbus.ChangedMessageSignal(id, event)

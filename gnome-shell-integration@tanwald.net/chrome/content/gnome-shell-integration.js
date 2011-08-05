@@ -11,26 +11,53 @@ function prompt(message) {
     promptService.alert(null, "Gnome-Shell-Integration Alert", message);
 }
 
-var NewMsgListener = {    
-    
-    _NEW_MSG_FLAG: 0x00010000,
+var FolderListener = {
+        
+    NEW: Components.interfaces.nsMsgMessageFlags.New,
+    READ: Components.interfaces.nsMsgMessageFlags.Read,
     
     /**
-     * Function that is triggered when a new message arrives.
-     * @param header: Header of the new message.
+     * Sends a DBus-Message when a new message arrives.
+     * @param parent: nsIMsgFolder
+     * @param item: nsISupports
      */
-    msgAdded: function(header) { 
-        if (header.flags & this._NEW_MSG_FLAG) {
+    OnItemAdded: function(parent, item) { 
+        var header = item.QueryInterface(Components.interfaces.nsIMsgDBHdr);
+        if (header.flags & this.NEW) {
             [author, subject] = this.prepareMsg(header);
-            this.sendDBusMsg(author, subject);
+            this.sendDBusMsg(["new", header.messageId, author, subject]);
         }
+    },
+    
+    /**
+     * Sends a DBus-Message when a message gets removed.
+     * @param parent: nsIMsgFolder
+     * @param item: nsISupports
+     */
+    OnItemRemoved: function(parent, item) { 
+        var header = item.QueryInterface(Components.interfaces.nsIMsgDBHdr); 
+        this.sendDBusMsg(["removed", header.messageId]);
+    },
+    
+    /**
+     * Sends a DBus-Message when a message is marked read.
+     * @param item: nsIMsgDBHdr
+     * @param property: nsIAtom
+     * @param oldFlag: Old header flag (long).
+     * @param newFlag: New header flag (long).
+     */
+    OnItemPropertyFlagChanged: function(item, property, oldFlag, newFlag) { 
+        if (property.toString() == "Status" &&
+                !(oldFlag & this.READ) && newFlag & this.READ) {
+            this.sendDBusMsg(["read", item.messageId]);
+        } 
     },
     
     /**
      * Extracts and converts author and subject from the header
      * into UTF-8-Strings. 
-     * @param header: Header of the new message
-     * @return: [ UTF-8-String, UTF-8-String ]
+     * @param header: nsIMsgDBHdr
+     * @returns: [ UTF-8-String, UTF-8-String ]
      */
     prepareMsg: function(header) {
         var unicodeConverter = Components
@@ -48,16 +75,14 @@ var NewMsgListener = {
 
     /**
      * Delegates to the Python-Script that sends the DBus-Message.
-     * @param author: Author of the new message.
-     * @param subject: Subject of the new message.
+     * @param args: Arguments for the Python-Script.
      */
-    sendDBusMsg: function(author, subject) {
+    sendDBusMsg: function(args) {
         var file = Components.classes["@mozilla.org/file/local;1"]
             .createInstance(Components.interfaces.nsILocalFile);
         var process = Components.classes["@mozilla.org/process/util;1"]
             .createInstance(Components.interfaces.nsIProcess);
         var path = '';
-        
         try { 
             const DirService = new Components
                   .Constructor("@mozilla.org/file/directory_service;1", 
@@ -70,11 +95,9 @@ var NewMsgListener = {
             prompt("Error while trying to locate the profile directory\n" + e);
             return;
         }
-        
         try {
             file.initWithPath(path);
             process.init(file);
-            var args = [author, subject];
             var exitcode = process.run(true, args, args.length);
         } catch(e) {
             prompt("Error while trying to send a DBus message\n" + e);
@@ -84,25 +107,19 @@ var NewMsgListener = {
 };
 
 var GnomeShellIntegration = {
-    /**
-     * Initializes the extension.
-     */
     onLoad: function() {
         this.initialized = true;
-        this.addNewMsgListener();
-    },
-    
-    /**
-     * Adds the NewMsgListener.
-     */
-    addNewMsgListener: function() {
-        var notificationService = Components
-            .classes["@mozilla.org/messenger/msgnotificationservice;1"]
-            .getService(Components.interfaces.nsIMsgFolderNotificationService);
-        notificationService.addListener(NewMsgListener, 
-                                        notificationService.msgAdded);
+        
+        var iface = Components.interfaces.nsIFolderListener;
+        var flags = iface.added | iface.removed | iface.propertyFlagChanged;
+        var mailSession = Components
+            .classes["@mozilla.org/messenger/services/session;1"]
+            .getService(Components.interfaces.nsIMsgMailSession);
+
+        mailSession.AddFolderListener(FolderListener, flags);
     }
 };
 
 window.addEventListener("load", GnomeShellIntegration.onLoad(), false);
+
 
