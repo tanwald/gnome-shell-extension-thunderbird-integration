@@ -60,12 +60,12 @@ var NewMsgListener = {
         
         try { 
             const DirService = new Components
-                .Constructor("@mozilla.org/file/directory_service;1", 
-                             "nsIProperties");
+                  .Constructor("@mozilla.org/file/directory_service;1", 
+                               "nsIProperties");
             path = (new DirService()).get("ProfD", 
                                           Components.interfaces.nsIFile).path; 
             path = path + "/extensions/gnome-shell-integration@tanwald.net"
-                + "/chrome/content/gnome-shell-integration.py";
+                   + "/chrome/content/gnome-shell-integration.py";
         } catch(e) {
             prompt("Error while trying to locate the profile directory\n" + e);
             return;

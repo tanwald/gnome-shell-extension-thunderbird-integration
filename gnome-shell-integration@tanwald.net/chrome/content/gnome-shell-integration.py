@@ -4,7 +4,6 @@ import dbus
 from dbus.mainloop.glib import DBusGMainLoop
 import dbus.service
 import sys
-import re
 
 class ThunderbirdDBus(dbus.service.Object):
     _BUSNAME = 'org.mozilla.thunderbird.DBus'
@@ -20,7 +19,7 @@ class ThunderbirdDBus(dbus.service.Object):
         pass
 
 if __name__ == '__main__':
-    author = re.sub(r'\s<.*', '', sys.argv[1])
+    author = sys.argv[1]
     subject = sys.argv[2] if (len(sys.argv) > 2) else ''
     
     tb_dbus = ThunderbirdDBus()

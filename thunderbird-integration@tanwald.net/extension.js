@@ -71,7 +71,8 @@ ThunderbirdNotificationSource.prototype = {
     onNewMsg: function(author, subject) {
         let title = (this.notifications.length + 1) + '. ' 
                     + Gettext.gettext('New Message');
-        let message = Gettext.gettext('From') + ': ' + author + '\n' 
+        let message = Gettext.gettext('From') + ': ' 
+                      + author.replace(/\s<.*/, '\n') 
                       + Gettext.gettext('Subject') + ': ' + subject;
         this.notify(new MessageTray.Notification(this, title, message));
     },
