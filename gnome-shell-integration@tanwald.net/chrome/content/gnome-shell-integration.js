@@ -12,7 +12,6 @@ function prompt(message) {
 }
 
 var FolderListener = {
-        
     NEW: Components.interfaces.nsMsgMessageFlags.New,
     READ: Components.interfaces.nsMsgMessageFlags.Read,
     
@@ -107,6 +106,9 @@ var FolderListener = {
 };
 
 var GnomeShellIntegration = {
+    /**
+     * Registers the FolderListener at start up.
+     */
     onLoad: function() {
         this.initialized = true;
         
