@@ -122,7 +122,7 @@ ThunderbirdNotificationSource.prototype = {
     },
     
     /**
-     * Removes message which were removed or marked read within Thunderbird.
+     * Removes messages which were removed or marked read within Thunderbird.
      * @param id: Thunderbird message id. 
      */
     onChangedMsg: function(id) {

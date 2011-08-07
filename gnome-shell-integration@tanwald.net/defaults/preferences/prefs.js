@@ -1,1 +1,1 @@
-pref("extensions.thundershell@tanwald.net.description", "chrome://thundershell/locale/thundershell.properties");
+pref("extensions.gnome-shell-integration@tanwald.net.description", "chrome://gnome-shell-integration/locale/gnome-shell-integration.properties");

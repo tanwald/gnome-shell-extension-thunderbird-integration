@@ -14,6 +14,7 @@ function prompt(message) {
 var FolderListener = {
     NEW: Components.interfaces.nsMsgMessageFlags.New,
     READ: Components.interfaces.nsMsgMessageFlags.Read,
+    RE: Components.interfaces.nsMsgMessageFlags.HasRe,
     
     /**
      * Sends a DBus-Message when a new message arrives.
@@ -41,13 +42,12 @@ var FolderListener = {
     /**
      * Sends a DBus-Message when a message is marked read.
      * @param item: nsIMsgDBHdr
-     * @param property: nsIAtom
+     * @param property: nsIAtom (We are looking for 'Status')
      * @param oldFlag: Old header flag (long).
      * @param newFlag: New header flag (long).
      */
     OnItemPropertyFlagChanged: function(item, property, oldFlag, newFlag) { 
-        if (property.toString() == "Status" &&
-                !(oldFlag & this.READ) && newFlag & this.READ) {
+        if (!(oldFlag & this.READ) && newFlag & this.READ) {
             this.sendDBusMsg(["read", item.messageId]);
         } 
     },
@@ -69,6 +69,9 @@ var FolderListener = {
         var subject = unicodeConverter
             .ConvertFromUnicode(header.mime2DecodedSubject) 
             + unicodeConverter.Finish();
+        // 'Re'-strings are stripped by Thunderbird and their existence is
+        // stored as a flag.
+        if (header.flags & this.RE) subject = "Re: " + subject;
         return [author, subject];
     },
 
