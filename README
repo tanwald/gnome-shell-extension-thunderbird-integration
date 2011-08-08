@@ -1,0 +1,21 @@
+THUNDERBIRD-INTEGRATION
+
+This extension consists of two components:
+ 
+A Thunderbird addon which fires DBus-Signals when new mail arrives and when a 
+message gets deleted or marked read.
+
+A gnome-shell extension that connects to those signals and uses the gnome-shell
+notification system to notify the user. On the first new mail a message tray 
+icon will be created which collects consecutive notifications. Clicking on the 
+notifications as they appear or within the summary of the message tray will 
+activate Thunderbird. When a message gets deleted or marked read within 
+Thunderbird it also gets removed from the summary. The last removed notification 
+will also destroy the message tray icon.    
+
+INSTALLATION:
+
+The install.sh script copies all files to the extension-folders of the 
+gnome-shell and Thunderbird. You can also do it yourself but don't forget to
+make gnome-shell-integration.py executable. You might need to restart 
+Thunderbird with the -purgecaches flag.
