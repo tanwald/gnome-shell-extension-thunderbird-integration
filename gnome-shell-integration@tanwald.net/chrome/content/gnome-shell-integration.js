@@ -17,42 +17,6 @@ var FolderListener = {
     RE: Components.interfaces.nsMsgMessageFlags.HasRe,
     
     /**
-     * Sends a DBus-Message when a new message arrives.
-     * @param parent: nsIMsgFolder
-     * @param item: nsISupports
-     */
-    OnItemAdded: function(parent, item) { 
-        var header = item.QueryInterface(Components.interfaces.nsIMsgDBHdr);
-        if (header.flags & this.NEW) {
-            [author, subject] = this.prepareMsg(header);
-            this.sendDBusMsg(["new", header.messageId, author, subject]);
-        }
-    },
-    
-    /**
-     * Sends a DBus-Message when a message gets removed.
-     * @param parent: nsIMsgFolder
-     * @param item: nsISupports
-     */
-    OnItemRemoved: function(parent, item) { 
-        var header = item.QueryInterface(Components.interfaces.nsIMsgDBHdr); 
-        this.sendDBusMsg(["removed", header.messageId]);
-    },
-    
-    /**
-     * Sends a DBus-Message when a message is marked read.
-     * @param item: nsIMsgDBHdr
-     * @param property: nsIAtom (We are looking for 'Status')
-     * @param oldFlag: Old header flag (long).
-     * @param newFlag: New header flag (long).
-     */
-    OnItemPropertyFlagChanged: function(item, property, oldFlag, newFlag) { 
-        if (!(oldFlag & this.READ) && newFlag & this.READ) {
-            this.sendDBusMsg(["read", item.messageId]);
-        } 
-    },
-    
-    /**
      * Extracts and converts author and subject from the header
      * into UTF-8-Strings. 
      * @param header: nsIMsgDBHdr
@@ -108,20 +72,69 @@ var FolderListener = {
     }
 };
 
+var NotificationServiceListener = {
+    __proto__:  FolderListener,
+    
+    /**
+     * Sends a DBus-Message when a new message arrives.
+     * @param header: nsIMsgDBHdr
+     */
+    msgAdded: function(header) { 
+        if (header.flags & this.NEW) {
+            [author, subject] = this.prepareMsg(header);
+            this.sendDBusMsg(["new", header.messageId, author, subject]);
+        }
+    },
+    
+    /**
+     * Sends DBus-Messages when messages got deleted.
+     * @param headers: nsIArray of nsIMsgDBHdr.
+     */
+    msgsDeleted: function(headers) { 
+        while(headers.hasMoreElements()) {
+            var header = headers.getNext();
+            this.sendDBusMsg(["deleted", header.messageId]);
+        }
+    }
+};
+
+var MailSessionListener = {
+    __proto__:  FolderListener,
+
+    /**
+     * Sends a DBus-Message when a message got marked read.
+     * @param item: nsIMsgDBHdr
+     * @param property: nsIAtom (We are looking for 'Status')
+     * @param oldFlag: Old header flag (long).
+     * @param newFlag: New header flag (long).
+     */
+    OnItemPropertyFlagChanged: function(item, property, oldFlag, newFlag) { 
+        if (!(oldFlag & this.READ) && newFlag & this.READ) {
+            this.sendDBusMsg(["read", item.messageId]);
+        } 
+    }
+};
+
 var GnomeShellIntegration = {
     /**
-     * Registers the FolderListener at start up.
+     * Registers the FolderListeners at start up.
      */
     onLoad: function() {
-        this.initialized = true;
+        // For new and deleted messages.
+        var notificationService = Components
+            .classes["@mozilla.org/messenger/msgnotificationservice;1"]
+            .getService(Components.interfaces.nsIMsgFolderNotificationService);
+        notificationService.addListener(NotificationServiceListener, 
+                                        notificationService.msgAdded |
+                                        notificationService.msgsDeleted);
         
-        var iface = Components.interfaces.nsIFolderListener;
-        var flags = iface.added | iface.removed | iface.propertyFlagChanged;
+        // For messages which got marked read.
+        var nsIFolderListener = Components.interfaces.nsIFolderListener;
         var mailSession = Components
             .classes["@mozilla.org/messenger/services/session;1"]
             .getService(Components.interfaces.nsIMsgMailSession);
-
-        mailSession.AddFolderListener(FolderListener, flags);
+        mailSession.AddFolderListener(MailSessionListener, 
+                                      nsIFolderListener.propertyFlagChanged);
     }
 };
 

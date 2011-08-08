@@ -31,5 +31,5 @@ if __name__ == '__main__':
     tb_dbus = ThunderbirdDBus()
     if event == 'new':
         tb_dbus.NewMessageSignal(id, author, subject)
-    elif event == 'read' or 'removed':
+    elif event == 'read' or 'deleted':
         tb_dbus.ChangedMessageSignal(id, event)

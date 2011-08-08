@@ -68,7 +68,7 @@ ThunderbirdProxy.prototype = {
      * Delegates to the ThunderbirdNotificationSource. 
      * @param id: Thunderbird message id.
      * @param event: Event that has triggered 
-     * the ChangedMessageSignal (removed or read)
+     * the ChangedMessageSignal (deleted or read)
      */
     _onChangedMsg: function(object, id, event) {
         if (this._source) {
@@ -122,7 +122,7 @@ ThunderbirdNotificationSource.prototype = {
     },
     
     /**
-     * Removes messages which were removed or marked read within Thunderbird.
+     * Removes messages which were deleted or marked read within Thunderbird.
      * @param id: Thunderbird message id. 
      */
     onChangedMsg: function(id) {
