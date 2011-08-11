@@ -1,5 +1,5 @@
 {	"shell-version": ["3.0.2"],
 	"uuid": "thunderbird-integration@tanwald.net",
 	"name": "Thunderbird Integration",
-	"description": "Better integration of Thunderbird into the gnome-shell"
+	"description": "Better integration of Thunderbird into the GNOME Shell"
 }

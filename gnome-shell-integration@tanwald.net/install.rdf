@@ -7,12 +7,12 @@
     <em:version>0.1</em:version>
     <em:creator>Paul Neulinger</em:creator>
     <em:contributor></em:contributor>
-    <em:description>Gluecode for the integration of Thunderbird into the gnome-shell</em:description>
+    <em:description>Gluecode for the integration of Thunderbird into the GNOME Shell</em:description>
     <em:targetApplication>
       <Description>
         <em:id>{3550f703-e582-4d05-9a08-453d09bdfdc6}</em:id> <!-- Thunderbird -->
         <em:minVersion>5.0</em:minVersion>
-        <em:maxVersion>6.*</em:maxVersion>
+        <em:maxVersion>5.*</em:maxVersion>
       </Description>
     </em:targetApplication>
   </Description>

@@ -140,8 +140,7 @@ ThunderbirdNotificationSource.prototype = {
      * @override
      */
     open: function() {
-        // I think in upcoming versions of gnome-shell there will be an easier
-        // way (something like this._tbApp.get_source_window()). 
+        // This might get easier in upcoming releases of GNOME Shell.
         let windowTracker = Shell.WindowTracker.get_default();
         let runningApps = windowTracker.get_running_apps('');
         let thunderbird = null;
