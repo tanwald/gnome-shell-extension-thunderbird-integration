@@ -1,7 +1,8 @@
 /* -*- mode: js2; js2-basic-offset: 4; indent-tabs-mode: nil -*- */
 
 const DBus = imports.dbus;
-const Gettext = imports.gettext;
+const Gettext = imports.gettext.domain('gnome-shell-extensions');
+const _ = Gettext.gettext;
 const Lang = imports.lang;
 const Shell = imports.gi.Shell;
 
@@ -95,8 +96,8 @@ ThunderbirdNotificationSource.prototype = {
      */
     _init: function() {
         MessageTray.Source.prototype._init.call(this, 'Thunderbird');
-        let appSystem = Shell.AppSystem.get_default();
-        this._tbApp = appSystem.get_app('mozilla-thunderbird.desktop');
+        this._appSystem = Shell.AppSystem.get_default();
+        this._tbApp = this._appSystem.lookup_app('mozilla-thunderbird.desktop');
         this._setSummaryIcon(this.createNotificationIcon());
     },
     
@@ -108,11 +109,11 @@ ThunderbirdNotificationSource.prototype = {
      * @param subject: Subject of the new message.
      */
     onNewMsg: function(id, author, subject) {
-        let title = Gettext.gettext('New Message');
-        let message = Gettext.gettext('From') + ': ' 
+        let title = _('New Message');
+        let message = _('From') + ': ' 
                       // Strip the email address.
                       + author.replace(/\s<.*/, '\n') 
-                      + Gettext.gettext('Subject') + ': ' + subject;
+                      + _('Subject') + ': ' + subject;
         let notification = new MessageTray.Notification(this, title, message);
         notification.thunderbirdId = id;
         // Notifications should not be removed on click but only when they are
@@ -140,9 +141,7 @@ ThunderbirdNotificationSource.prototype = {
      * @override
      */
     open: function() {
-        // This might get easier in upcoming releases of GNOME Shell.
-        let windowTracker = Shell.WindowTracker.get_default();
-        let runningApps = windowTracker.get_running_apps('');
+        let runningApps = this._appSystem.get_running();
         let thunderbird = null;
         for (i in runningApps) {
             if (runningApps[i].get_name() == this._tbApp.get_name()) {
@@ -174,12 +173,20 @@ ThunderbirdNotificationSource.prototype = {
 // Main ///////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
-function main(extensionMeta) {
-    
-    Gettext.bindtextdomain('thunderbird-integration', 
-            extensionMeta.path + '/locale');
-    Gettext.textdomain('thunderbird-integration');
-    
-    let thunderbirdProxy = new ThunderbirdProxy();
-    
+function init(metadata) {
+    imports.gettext.bindtextdomain('gnome-shell-extensions', 
+                                   metadata.path + '/locale');
 }
+
+let thunderbirdProxy;
+
+function enable() {
+    log('Thunderbird Integration enabled');
+    thunderbirdProxy = new ThunderbirdProxy();
+}
+
+function disable() {
+    log('Thunderbird Integration disabled');
+    thunderbirdProxy = null;
+}
+
