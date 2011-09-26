@@ -1,11 +1,14 @@
 THUNDERBIRD-INTEGRATION
  
 This extension uses the GNOME Shell notifications system to inform the user
-about new mail.     
+about new mail.
+
+It consists of two extensions. A Thunderbird extension which sends DBus-signals
+and the GNOME Shell part which connects to those signals.     
 
 INSTALLATION:
 
 The install.sh script copies all files to the extension-folders of Thunderbird
 and GNOME Shell. You can also do it yourself but don't forget to make 
 gnome-shell-integration.py executable. You might need to restart Thunderbird 
-with the -purgecaches flag.
+with the -purgecaches flag and enable the extension (gsettings).
