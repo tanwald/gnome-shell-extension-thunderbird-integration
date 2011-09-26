@@ -5,6 +5,9 @@ var GnomeShellIntegration = {
      * Registers the FolderListeners at start up.
      */
     onLoad: function() {
+        // Last removed message. When it is added again there won't be
+        // a second new mail notification.
+        this.lastRemoved = null;
         // For new and deleted messages.
         var notificationService = Components
             .classes["@mozilla.org/messenger/msgnotificationservice;1"]
@@ -73,7 +76,8 @@ var NotificationServiceListener = {
      */
     msgAdded: function(header) { 
         const isNew = Components.interfaces.nsMsgMessageFlags.New;
-        if (header.flags & isNew && !this.isSpecial(header.folder)) {
+        if (header.flags & isNew && !this.isSpecial(header.folder) &&
+                header.messageId != GnomeShellIntegration.lastRemoved) {
             [author, subject] = this.prepareMsg(header);
             GnomeShellIntegration.sendDBusMsg(["new", header.messageId, 
                                                author, subject]);
@@ -134,6 +138,16 @@ var NotificationServiceListener = {
 };
 
 var MailSessionListener = {
+    /**
+     * Stores the last removed message to avoid duplicated notifications.
+     * @param parent: nsIMsgFolder
+     * @param item: nsISupports
+     */
+    OnItemRemoved: function(parent, item) { 
+        var header = item.QueryInterface(Components.interfaces.nsIMsgDBHdr); 
+        GnomeShellIntegration.lastRemoved = header.messageId;
+    },
+    
     /**
      * Sends a DBus-Message when a message got marked read.
      * @param item: nsIMsgDBHdr
