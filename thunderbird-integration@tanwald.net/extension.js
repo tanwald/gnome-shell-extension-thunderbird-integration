@@ -98,6 +98,9 @@ ThunderbirdNotificationSource.prototype = {
         MessageTray.Source.prototype._init.call(this, 'Thunderbird');
         this._appSystem = Shell.AppSystem.get_default();
         this._tbApp = this._appSystem.lookup_app('mozilla-thunderbird.desktop');
+        if (!this._tbApp) {
+            this._tbApp = this._appSystem.lookup_app('thunderbird.desktop');
+        }
         this._setSummaryIcon(this.createNotificationIcon());
     },
     
@@ -136,27 +139,11 @@ ThunderbirdNotificationSource.prototype = {
     },
     
     /**
-     * Switches to the workspace where Thunderbird is running and activates it.
-     * If Thunderbird is not already running it is started.
+     * Activates Thunderbird.
      * @override
      */
     open: function() {
-        let runningApps = this._appSystem.get_running();
-        let thunderbird = null;
-        for (i in runningApps) {
-            if (runningApps[i].get_name() == this._tbApp.get_name()) {
-                thunderbird = runningApps[i];
-                break;
-            }
-        }
-        if (thunderbird) {
-            //TODO Ensure that the main window is assigned.
-            let window = thunderbird.get_windows()[0];
-            window.get_workspace().activate(true);
-            Main.activateWindow(window, global.get_current_time());
-        } else {
-            Util.spawn(['thunderbird']);
-        }  
+        this._tbApp.activate();
     },
 
     /**
