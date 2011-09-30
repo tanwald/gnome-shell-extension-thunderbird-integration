@@ -1,13 +1,15 @@
 /* -*- mode: js2; js2-basic-offset: 4; indent-tabs-mode: nil -*- */
 
+const QUEUE_SIZE = 50;
+
 var GnomeShellIntegration = {
     /**
      * Registers the FolderListeners at start up.
      */
     onLoad: function() {
-        // Last removed message. When it is added again there won't be
+        // Last removed messages. When they are added again there won't be
         // a second new mail notification.
-        this.lastRemoved = null;
+        this.removedQueue = new Array();
         // For new and deleted messages.
         var notificationService = Components
             .classes["@mozilla.org/messenger/msgnotificationservice;1"]
@@ -16,7 +18,7 @@ var GnomeShellIntegration = {
                                         notificationService.msgAdded |
                                         notificationService.msgsDeleted);
         
-        // For messages which got marked read.
+        // For messages which got marked read and removed.
         const nsIFolderListener = Components.interfaces.nsIFolderListener;
         var mailSession = Components
             .classes["@mozilla.org/messenger/services/session;1"]
@@ -58,6 +60,32 @@ var GnomeShellIntegration = {
     },
     
     /**
+     * Adds removed messages to a (FIFO) queue.
+     * @param messageId: ID of the removed message
+     */
+    addRemoved: function(messageId) {
+        this.removedQueue.push(messageId);
+        // This array should not grow forever.
+        if (this.removedQueue.length > QUEUE_SIZE) {
+            this.removedQueue.shift();
+        }
+    },
+    
+    /**
+     * Checks if a message was removed from another folder before
+     * it was added again.
+     * @param messageId: ID of the message
+     */
+    isQueued: function(messageId) {
+        for (i in this.removedQueue) {
+            if (this.removedQueue[i] == messageId) {
+                return true;
+            }
+        }
+        return false;
+    },
+    
+    /**
      * Helper function for debugging.
      * @param message: Message that is to be displayed.
      */
@@ -77,7 +105,7 @@ var NotificationServiceListener = {
     msgAdded: function(header) { 
         const isNew = Components.interfaces.nsMsgMessageFlags.New;
         if (header.flags & isNew && !this.isSpecial(header.folder) &&
-                header.messageId != GnomeShellIntegration.lastRemoved) {
+                !GnomeShellIntegration.isQueued(header.messageId)) {
             [author, subject] = this.prepareMsg(header);
             GnomeShellIntegration.sendDBusMsg(["new", header.messageId, 
                                                author, subject]);
@@ -139,13 +167,13 @@ var NotificationServiceListener = {
 
 var MailSessionListener = {
     /**
-     * Stores the last removed message to avoid duplicated notifications.
+     * Stores removed messages to avoid duplicated notifications.
      * @param parent: nsIMsgFolder
      * @param item: nsISupports
      */
     OnItemRemoved: function(parent, item) { 
         var header = item.QueryInterface(Components.interfaces.nsIMsgDBHdr); 
-        GnomeShellIntegration.lastRemoved = header.messageId;
+        GnomeShellIntegration.addRemoved(header.messageId);
     },
     
     /**
@@ -157,6 +185,7 @@ var MailSessionListener = {
      */
     OnItemPropertyFlagChanged: function(item, property, oldFlag, newFlag) {
         const isRead = Components.interfaces.nsMsgMessageFlags.Read;
+        // TODO moved messages get marked read?
         if (!(oldFlag & isRead) && newFlag & isRead) {
             GnomeShellIntegration.sendDBusMsg(["read", item.messageId]);
         } 

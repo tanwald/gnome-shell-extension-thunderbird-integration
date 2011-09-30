@@ -8,7 +8,6 @@ const Shell = imports.gi.Shell;
 
 const Main = imports.ui.main;
 const MessageTray = imports.ui.messageTray;
-const Util = imports.misc.util;
 
 const ThunderbirdIface = {
     name: 'org.mozilla.thunderbird.DBus',
@@ -41,7 +40,7 @@ ThunderbirdProxy.prototype = {
         this.connect('NewMessageSignal',
                      Lang.bind(this, this._onNewMsg));
         this.connect('ChangedMessageSignal',
-                Lang.bind(this, this._onChangedMsg));
+                     Lang.bind(this, this._onChangedMsg));
     },
 
     /**
