@@ -12,3 +12,6 @@ The install.sh script copies all files to the extension-folders of Thunderbird
 and GNOME Shell. You can also do it yourself but don't forget to make 
 gnome-shell-integration.py executable. You might need to restart Thunderbird 
 with the -purgecaches flag and enable the extension (gsettings).
+
+CONTRIBUTORS:
+darkxst
