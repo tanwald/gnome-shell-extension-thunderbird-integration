@@ -143,6 +143,7 @@ ThunderbirdNotificationSource.prototype = {
      */
     open: function() {
         this._tbApp.activate();
+        Main.overview.hide();
     },
 
     /**
