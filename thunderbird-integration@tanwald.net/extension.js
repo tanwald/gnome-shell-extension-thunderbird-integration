@@ -100,6 +100,9 @@ ThunderbirdNotificationSource.prototype = {
         if (!this._tbApp) {
             this._tbApp = this._appSystem.lookup_app('thunderbird.desktop');
         }
+        if (!this._tbApp) {
+            this._tbApp = this._appSystem.lookup_app('icedove.desktop');
+        }
         this._setSummaryIcon(this.createNotificationIcon());
     },
     
