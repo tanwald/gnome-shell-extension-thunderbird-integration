@@ -1,7 +1,7 @@
 /* -*- mode: js2; js2-basic-offset: 4; indent-tabs-mode: nil -*- */
 
 const DBus = imports.dbus;
-const Gettext = imports.gettext.domain('gnome-shell-extensions');
+const Gettext = imports.gettext.domain('thunderbird-integration');
 const _ = Gettext.gettext;
 const Lang = imports.lang;
 const Shell = imports.gi.Shell;
@@ -164,7 +164,7 @@ ThunderbirdNotificationSource.prototype = {
 ///////////////////////////////////////////////////////////////////////////////
 
 function init(metadata) {
-    imports.gettext.bindtextdomain('gnome-shell-extensions', 
+    imports.gettext.bindtextdomain('thunderbird-integration', 
                                    metadata.path + '/locale');
 }
 
