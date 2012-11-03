@@ -103,7 +103,6 @@ ThunderbirdNotificationSource.prototype = {
         if (!this._tbApp) {
             this._tbApp = this._appSystem.lookup_app('icedove.desktop');
         }
-        this._setSummaryIcon(this.createNotificationIcon());
     },
     
     /**
@@ -154,8 +153,8 @@ ThunderbirdNotificationSource.prototype = {
      * @override
      * @return: Icon texture.
      */
-    createNotificationIcon: function() {
-        return this._tbApp.create_icon_texture(this.ICON_SIZE);
+    createIcon: function(size) {
+        return this._tbApp.create_icon_texture(size);
     }
 };
 
